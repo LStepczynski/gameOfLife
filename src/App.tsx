@@ -11,6 +11,11 @@ function App() {
     height: Math.floor((window.innerHeight * 0.9) / blockSize),
   });
 
+  // Temporary for build process
+  if (false) {
+    setBlockSize(20);
+  }
+
   React.useEffect(() => {
     const handleResize = () => {
       setGameSize({
@@ -30,13 +35,11 @@ function App() {
     <AppContainer>
       <Background />
       <Header />
-      <GameContainer>
-        <GameBoard
-          width={gameSize.width}
-          height={gameSize.height}
-          boxSize={blockSize}
-        />
-      </GameContainer>
+      <GameBoard
+        width={gameSize.width}
+        height={gameSize.height}
+        boxSize={blockSize}
+      />
     </AppContainer>
   );
 }

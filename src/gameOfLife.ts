@@ -2,8 +2,10 @@
 import { GameBox } from "./gameBox";
 
 export class GameOfLife {
-  public canvas: HTMLCanvasElement;
-  public ctx: CanvasRenderingContext2D;
+  public gameCanvas: HTMLCanvasElement;
+  public gridCanvas: HTMLCanvasElement;
+  public gameCtx: CanvasRenderingContext2D;
+  public gridCtx: CanvasRenderingContext2D;
 
   public board: GameBox[][];
 
@@ -29,36 +31,31 @@ export class GameOfLife {
   ];
 
   constructor(
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
+    gameCanvas: HTMLCanvasElement,
+    gridCanvas: HTMLCanvasElement,
     width: number,
     height: number,
     boxSize: number
   ) {
-    this.canvas = canvas;
-    this.ctx = ctx;
+    this.gameCanvas = gameCanvas;
+    this.gridCanvas = gridCanvas;
     this.width = width;
     this.height = height;
     this.boxSize = boxSize;
 
+    this.gameCtx = gameCanvas.getContext("2d")!;
+    this.gridCtx = gridCanvas.getContext("2d")!;
+
     this.board = this.createGrid();
     this.resizeCanvas();
     this.drawBoard();
+    this.drawGridLines();
 
     // Bind event handlers
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
-
-    window.addEventListener("keydown", (event) => this.handleKey(event.key));
-  }
-
-  public handleKey(key: string) {
-    // Apply the rules to the boxes if space was pressed
-    if (key === " ") {
-      this.nextGeneration();
-    }
   }
 
   public handleMouseDown(event: MouseEvent) {
@@ -87,7 +84,7 @@ export class GameOfLife {
 
   public handleInteraction(event: MouseEvent) {
     // Get coordinates of the click in relation of the canvas
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this.gameCanvas.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
@@ -188,17 +185,21 @@ export class GameOfLife {
 
     // Replace active blocks with the newly computed set
     this.activeBlocks = newActiveBlocks;
-    this.drawGridLines();
   }
 
   public resizeCanvas = () => {
-    this.canvas.width = this.boxSize * this.width;
-    this.canvas.height = this.boxSize * this.height;
+    this.gameCanvas.width = this.boxSize * this.width;
+    this.gameCanvas.height = this.boxSize * this.height;
+    this.gridCanvas.width = this.boxSize * this.width;
+    this.gridCanvas.height = this.boxSize * this.height;
 
     window.addEventListener("resize", () => {
-      this.canvas.width = this.boxSize * this.width;
-      this.canvas.height = this.boxSize * this.height;
+      this.gameCanvas.width = this.boxSize * this.width;
+      this.gameCanvas.height = this.boxSize * this.height;
+      this.gridCanvas.width = this.boxSize * this.width;
+      this.gridCanvas.height = this.boxSize * this.height;
       this.drawBoard();
+      this.drawGridLines();
     });
   };
 
@@ -222,43 +223,42 @@ export class GameOfLife {
 
   // Redraw the entire board
   public drawBoard = () => {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.gameCtx.clearRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
     for (let col = 0; col < this.width; col++) {
       for (let row = 0; row < this.height; row++) {
-        this.board[col][row].draw(this.ctx);
+        this.board[col][row].draw(this.gameCtx);
       }
     }
-    this.drawGridLines();
   };
 
   // Redraw a single cell
   public drawCell(col: number, row: number) {
     const cell = this.board[col][row];
-    this.ctx.clearRect(cell.x, cell.y, cell.width, cell.height);
-    cell.draw(this.ctx);
+    this.gameCtx.clearRect(cell.x, cell.y, cell.width, cell.height);
+    cell.draw(this.gameCtx);
   }
 
-  // Draw grid lines (if desired)
+  // Draw grid lines
   public drawGridLines() {
-    // // Vertical lines.
-    // for (let col = 1; col < this.width; col++) {
-    //   const x = col * this.boxSize;
-    //   this.ctx.beginPath();
-    //   this.ctx.moveTo(x, 0);
-    //   this.ctx.lineTo(x, this.canvas.height);
-    //   this.ctx.strokeStyle = "#1f1f1f";
-    //   this.ctx.lineWidth = 0.3;
-    //   this.ctx.stroke();
-    // }
-    // // Horizontal lines.
-    // for (let row = 1; row < this.height; row++) {
-    //   const y = row * this.boxSize;
-    //   this.ctx.beginPath();
-    //   this.ctx.moveTo(0, y);
-    //   this.ctx.lineTo(this.canvas.width, y);
-    //   this.ctx.strokeStyle = "#1f1f1f";
-    //   this.ctx.lineWidth = 0.3;
-    //   this.ctx.stroke();
-    // }
+    this.gridCtx.strokeStyle = "#303030";
+    this.gridCtx.lineWidth = 0.3;
+
+    // Draw vertical lines
+    for (let col = 0; col <= this.width; col++) {
+      const x = col * this.boxSize;
+      this.gridCtx.beginPath();
+      this.gridCtx.moveTo(x, 0);
+      this.gridCtx.lineTo(x, this.gridCanvas.height);
+      this.gridCtx.stroke();
+    }
+
+    // Draw horizontal lines
+    for (let row = 0; row <= this.height; row++) {
+      const y = row * this.boxSize;
+      this.gridCtx.beginPath();
+      this.gridCtx.moveTo(0, y);
+      this.gridCtx.lineTo(this.gridCanvas.width, y);
+      this.gridCtx.stroke();
+    }
   }
 }

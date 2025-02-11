@@ -6,7 +6,7 @@ export class GameBox {
   public height: number;
   public color: Record<string, string> = {
     false: "black",
-    true: "gray",
+    true: "white",
   };
 
   constructor(
@@ -26,9 +26,5 @@ export class GameBox {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color[`${this.state}`];
     ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    ctx.strokeStyle = "lightgray"; // Color for the border
-    ctx.lineWidth = 0.1; // Adjust for thinner or thicker lines
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
   }
 }
