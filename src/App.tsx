@@ -7,8 +7,8 @@ import { Header } from "./components/header";
 function App() {
   const [blockSize, setBlockSize] = React.useState(10);
   const [gameSize, setGameSize] = React.useState({
-    width: Math.floor((window.innerWidth * 0.9) / blockSize),
-    height: Math.floor((window.innerHeight * 0.9) / blockSize),
+    width: Math.floor((window.innerWidth*0.95) / blockSize),
+    height: Math.floor((window.innerHeight * 0.98) / blockSize),
   });
 
   // Temporary for build process
@@ -17,19 +17,29 @@ function App() {
   }
 
   React.useEffect(() => {
-    const handleResize = () => {
-      setGameSize({
-        width: Math.floor((window.innerWidth * 0.9) / blockSize),
-        height: Math.floor((window.innerHeight * 0.9) / blockSize),
-      });
-    };
+    let previousWidth = window.innerWidth;
+    let previousHeight = window.innerHeight;
 
-    window.addEventListener("resize", handleResize);
+    const intervalId = setInterval(() => {
+      const currentWidth = window.innerWidth;
+      const currentHeight = window.innerHeight;
 
+      if (currentWidth !== previousWidth || currentHeight !== previousHeight) {
+        previousWidth = currentWidth;
+        previousHeight = currentHeight;
+
+        setGameSize({
+          width: Math.floor((currentWidth * 0.95) / blockSize),
+          height: Math.floor((currentHeight * 0.98) / blockSize),
+        });
+      }
+    }, 500);
+
+    // Cleanup on component unmount
     return () => {
-      window.removeEventListener("resize", handleResize);
+      clearInterval(intervalId);
     };
-  }, []);
+  }, [blockSize]);
 
   return (
     <AppContainer>
@@ -60,15 +70,6 @@ const Background = styled.div`
   left: 0;
   background: #161a29;
   z-index: -10;
-`;
-
-// Game Container
-const GameContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  margin: 60px 0px;
 `;
 
 export default App;
